@@ -1,0 +1,5 @@
+datasource:
+  url: jdbc:postgresql://postgres:5432/postgres_db?reWriteBatchedInserts=true
+  username: postgres_user
+  maximumPoolSize: 9
+  minimumIdle: 9

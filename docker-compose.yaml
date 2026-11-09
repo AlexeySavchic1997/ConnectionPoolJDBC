@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db" ]
+      interval: 2s
+      retries: 5
+      start_period: 10s
+      timeout: 2s
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: Dataparole
+      POSTGRES_DB: postgres_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5445:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/pgdata
+    command: >
+      postgres -c max_connections=20
+
+  flyway:
+    image: flyway/flyway:latest
+    entrypoint: [ "flyway",
+                  "-url=jdbc:postgresql://postgres:5432/postgres_db?reWriteBatchedInserts=true;trustServerCertificate=true",
+                  "-locations=filesystem:/flyway/sqldock",
+                  "-user=postgres_user",
+                  "-password=Dataparole",
+                  "-baselineOnMigrate=true",
+                  "migrate"]
+    volumes:
+      - ./sql_migrations:/flyway/sqldock
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  java-connection-pool:
+    image: client:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      "1"
+    volumes:
+      - ./dums:/tmp/metric/
+    depends_on:
+        postgres:
+          condition: service_healthy
+        flyway:
+          condition: service_completed_successfully
+
+volumes:
+  pgdata:
+    driver: local

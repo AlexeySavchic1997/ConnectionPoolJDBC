@@ -1,6 +1,7 @@
 package by.alexeysavchic.config;
 
 import by.alexeysavchic.exception.CannotReadPropertyFileException;
+import by.alexeysavchic.exception.ErrorMessages;
 import by.alexeysavchic.exception.FileDidntExistException;
 import org.yaml.snakeyaml.Yaml;
 
@@ -12,8 +13,8 @@ import java.util.Map;
 public class ApplicationProperties {
     private final Map<String, Object> properties = init();
     private static ApplicationProperties applicationProperties;
-    private final static String applicationPath="application.yaml";
-    private final static String datasourcePath="datasource";
+    private final static String applicationPath=System.getProperty("app.properties");
+    private final static String datasourcePath=System.getProperty("app.properties.datasource");
 
     private ApplicationProperties() {
     }
@@ -24,9 +25,9 @@ public class ApplicationProperties {
             Yaml yaml = new Yaml();
             properties = yaml.load(inputStream);
         } catch (FileNotFoundException e) {
-            throw new FileDidntExistException("Property file doesn't exist", e, false, false);
+            throw new FileDidntExistException(ErrorMessages.propertyFileDoesntExist, e, false, false);
         } catch (IOException e) {
-            throw new CannotReadPropertyFileException("Cannot read property file exception", e, false, false);
+            throw new CannotReadPropertyFileException(ErrorMessages.cannotReadPropertyFile, e, false, false);
         }
         return properties;
     }

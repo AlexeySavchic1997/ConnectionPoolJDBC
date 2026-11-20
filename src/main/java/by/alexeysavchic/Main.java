@@ -2,8 +2,7 @@ package by.alexeysavchic;
 
 import by.alexeysavchic.config.ApplicationProperties;
 import by.alexeysavchic.exception.ApplicationException;
-import by.alexeysavchic.taskBlockingForUpdate.BlockingForUpdateTask;
-import by.alexeysavchic.taskBlockingForNoKeyUpdate.SelectUserTaskNoKeyBlocking;
+import by.alexeysavchic.exception.ErrorMessages;
 import by.alexeysavchic.taskConcurency.ConcurrentUpdateTask;
 import by.alexeysavchic.taskSimple.Task;
 import org.slf4j.Logger;
@@ -18,18 +17,22 @@ public class Main {
     public static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args)
     {
+        //Argument for start application passes in docker-compose
         try {
             ApplicationProperties applicationProperties=ApplicationProperties.getApplicationProperties();
         } catch (ApplicationException e) {
             logger.error(e.getMessage(), e);
-            throw new IllegalStateException("Cannot run program without properties");
+            throw new IllegalStateException(ErrorMessages.illegalState);
         }
 
+        //Cases are segmented in packages. Every case matches with separate package
         switch (args[0]){
+               //Simple crud
             case ("1"):
                 Task task=new Task();
-                task.deleteUserByDepartment("IT");
+                task.selectUserByDepartment("IT");
                 break;
+                //task for loading threads and checking metrics in jfr file
             case ("2"):
                 long durationMillis = 10000; // 10 секунд
                 long startTime = System.currentTimeMillis();
@@ -48,25 +51,7 @@ public class Main {
                     }
                 }
                 break;
-            case ("3"):
-                BlockingForUpdateTask blockingForUpdateTask = new BlockingForUpdateTask();
-                try{
-                    blockingForUpdateTask.selectByCost(5000);
-                }
-                catch (ApplicationException e){
-                    logger.error(e.getMessage(), e);
-                }
-                break;
-            case ("4"):
-                SelectUserTaskNoKeyBlocking selectUserTaskNoKeyBlocking =new SelectUserTaskNoKeyBlocking();
-                try {
-                    selectUserTaskNoKeyBlocking.selectUserBlock();
-                }
-                catch (ApplicationException e)
-                {
-                    logger.error(e.getMessage(),e);
-                }
-                break;
+
         }
     }
 }

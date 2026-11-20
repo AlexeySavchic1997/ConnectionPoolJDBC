@@ -8,4 +8,4 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /build/target/ConnectionPoolJDBC-1.0-SNAPSHOT.jar app.jar
-ENTRYPOINT ["java", "-XX:StartFlightRecording=delay=2s,filename=/tmp/metric/myrecording.jfr,settings=profile", "-Ddb.pass=Dataparole", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:StartFlightRecording=delay=2s,filename=/tmp/metric/myrecording.jfr,settings=profile", "-Ddb.pass=Dataparole", "-Dapp.properties=application.yaml", "-Dapp.properties.datasource=datasource", "-jar", "app.jar"]

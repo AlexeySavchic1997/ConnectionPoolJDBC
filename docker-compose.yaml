@@ -28,7 +28,7 @@ services:
                   "-user=postgres_user",
                   "-password=Dataparole",
                   "-baselineOnMigrate=true",
-                  "migrate"]
+                  "migrate" ]
     volumes:
       - ./sql_migrations:/flyway/sqldock
     depends_on:
@@ -41,14 +41,14 @@ services:
       context: .
       dockerfile: Dockerfile
     command:
-      "1"
+      "2"
     volumes:
       - ./dums:/tmp/metric/
     depends_on:
-        postgres:
-          condition: service_healthy
-        flyway:
-          condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

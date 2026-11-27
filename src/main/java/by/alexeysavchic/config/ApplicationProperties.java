@@ -2,39 +2,18 @@ package by.alexeysavchic.config;
 
 import by.alexeysavchic.exception.CannotReadPropertyFileException;
 import by.alexeysavchic.exception.ErrorMessages;
-import by.alexeysavchic.exception.FileDidntExistException;
-import org.yaml.snakeyaml.Yaml;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 public class ApplicationProperties {
-    private final Map<String, Object> properties = init();
     private static ApplicationProperties applicationProperties;
-    private final static String applicationPath=System.getProperty("app.properties");
-    private final static String datasourcePath=System.getProperty("app.properties.datasource");
+    private final static String applicationPath = System.getProperty("app.properties");
+    private final JsonNode properties = init();
 
     private ApplicationProperties() {
-    }
-
-    private Map<String, Object> init() {
-        Map<String, Object> properties = null;
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(applicationPath)) {
-            Yaml yaml = new Yaml();
-            properties = yaml.load(inputStream);
-        } catch (FileNotFoundException e) {
-            throw new FileDidntExistException(ErrorMessages.propertyFileDoesntExist, e, false, false);
-        } catch (IOException e) {
-            throw new CannotReadPropertyFileException(ErrorMessages.cannotReadPropertyFile, e, false, false);
-        }
-        return properties;
-    }
-
-    private Map<String, Object> databaseProperties() {
-        Map<String, Object> databaseProperties = (Map<String, Object>) properties.get(datasourcePath);
-        return databaseProperties;
     }
 
     public static ApplicationProperties getApplicationProperties() {
@@ -44,19 +23,18 @@ public class ApplicationProperties {
         return applicationProperties;
     }
 
-    public String getUrl() {
-        return (String) databaseProperties().get("url");
+    private JsonNode init() {
+        JsonNode properties;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(applicationPath)) {
+            YAMLMapper yamlMapper = new YAMLMapper();
+            properties = yamlMapper.readTree(inputStream);
+        } catch (IOException e) {
+            throw new CannotReadPropertyFileException(ErrorMessages.cannotReadPropertyFile, e, false, false);
+        }
+        return properties;
     }
 
-    public String getUsername() {
-        return (String) databaseProperties().get("username");
-    }
-
-    public Integer getMaximumPoolSize() {
-        return (Integer) databaseProperties().get("maximumPoolSize");
-    }
-
-    public Integer getMinimumIdle() {
-        return (Integer) databaseProperties().get("minimumIdle");
+    public JsonNode databaseProperties() {
+        return properties.path("datasource");
     }
 }
